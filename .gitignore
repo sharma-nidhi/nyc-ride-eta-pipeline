@@ -1,0 +1,22 @@
+# Environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Secrets and Config
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data & Models (Tracked by DVC, not Git)
+data/**/*
+!data/**/.gitkeep
+models/**/*
+!models/.gitkeep
+mlruns/
+
+# OS
+.DS_Store
+Thumbs.db

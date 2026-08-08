@@ -1,0 +1,16 @@
+# Core Data Science & ML - Phase 0/1
+pandas
+numpy
+scikit-learn
+joblib
+pyarrow
+
+# ML Experimentation & Modeling - Phase 2
+mlflow
+xgboost
+lightgbm
+catboost
+optuna
+
+# Data Versioning
+dvc
