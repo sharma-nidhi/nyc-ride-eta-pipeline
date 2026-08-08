@@ -13,6 +13,7 @@ __pycache__/
 # Data & Models (Tracked by DVC, not Git)
 data/**/*
 !data/**/.gitkeep
+!data/feature_meta.json
 models/**/*
 !models/.gitkeep
 mlruns/
