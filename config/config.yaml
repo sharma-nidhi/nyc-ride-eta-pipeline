@@ -1,0 +1,36 @@
+# Central config — paths, params, thresholds. Read by every stage.
+
+data:
+  kaggle_competition: nyc-taxi-trip-duration
+  raw_dir: data/raw
+  processed_dir: data/processed
+  train_file: data/raw/train.csv
+  target: trip_duration          # seconds
+  log_transform_target: true     # RMSLE is the competition metric
+
+nyc_bounds:                      # sanity ranges for GPS validation
+  min_lat: 40.5
+  max_lat: 41.0
+  min_lon: -74.3
+  max_lon: -73.7
+
+features:
+  feature_store: data/processed/feature_store.db
+  schema_file: models/feature_schema.json
+
+training:
+  experiment_name: nyc_ride_eta
+  test_size: 0.2
+  random_state: 42
+  model_dir: models
+  best_model_file: models/eta-v1.joblib
+
+serving:
+  model_version: eta-v1
+  host: 0.0.0.0
+  port: 8000
+
+monitoring:
+  predictions_db: monitoring/predictions.db
+  drift_sigma_threshold: 0.8     # flag feature if mean shift > 0.8σ
+  psi_threshold: 0.2             # PSI > 0.2 = significant drift

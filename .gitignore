@@ -1,0 +1,31 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Data (tracked by DVC, not Git)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+*.db
+
+# Models / artifacts
+models/*
+!models/.gitkeep
+
+# MLflow
+mlruns/
+mlflow.db
+
+# Secrets / credentials
+.env
+kaggle.json
+.kaggle/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
