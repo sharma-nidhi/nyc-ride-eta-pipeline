@@ -5,11 +5,13 @@ __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
 
-# Data (tracked by DVC, not Git)
+# Data files are tracked by DVC, not Git — but keep the tiny .dvc pointers & .gitkeep
 data/raw/*
 data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+!data/raw/*.dvc
+!data/processed/*.dvc
 *.db
 
 # Models / artifacts
