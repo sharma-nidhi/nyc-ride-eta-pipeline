@@ -14,6 +14,7 @@ from fastapi import FastAPI
 
 from features.build_features import build_features
 from serving.schemas import TripRequest, ETAResponse
+from monitoring.logger import init as init_log, log as log_prediction
 
 MODEL_PATH = "models/eta-v1.joblib"
 SCHEMA_PATH = "models/feature_schema.json"
@@ -25,6 +26,8 @@ app = FastAPI(title="NYC Ride ETA API", version="1.0")
 model = joblib.load(MODEL_PATH)
 with open(SCHEMA_PATH) as f:
     FEATURE_COLS = json.load(f)
+
+init_log()   # create the predictions table at startup
 
 
 @app.get("/health")
@@ -42,6 +45,9 @@ def predict(trip: TripRequest):
 
     # 3. Model predicts log1p(seconds); invert with expm1
     eta_seconds = float(np.expm1(model.predict(X)[0]))
+
+    # 4. Log this prediction for monitoring / drift analysis
+    log_prediction(trip.model_dump(), X.iloc[0].to_dict(), eta_seconds, MODEL_VERSION)
 
     return ETAResponse(
         eta_seconds=round(eta_seconds, 1),

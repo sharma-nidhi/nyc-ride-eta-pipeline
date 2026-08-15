@@ -12,6 +12,7 @@ COPY serving/ serving/
 COPY features/ features/
 COPY models/ models/
 COPY config/ config/
+COPY monitoring/ monitoring/
 
 EXPOSE 8000
 CMD ["uvicorn", "serving.api:app", "--host", "0.0.0.0", "--port", "8000"]
