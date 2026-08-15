@@ -1,12 +1,11 @@
 # Packaging for the inference service (Week 3 / M4).
-# Placeholder — finalize once serving/api.py is implemented.
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install only what serving needs (keep the image small)
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install only what serving needs (slim deps -> smaller, faster image)
+COPY requirements-serve.txt .
+RUN pip install --no-cache-dir -r requirements-serve.txt
 
 # App code + model artifacts
 COPY serving/ serving/
