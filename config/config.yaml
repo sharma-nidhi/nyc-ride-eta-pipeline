@@ -15,7 +15,7 @@ nyc_bounds:                      # sanity ranges for GPS validation
   max_lon: -73.7
 
 features:
-  feature_store: data/processed/feature_store.db
+  feature_store: data/processed/features.parquet
   schema_file: models/feature_schema.json
 
 training:

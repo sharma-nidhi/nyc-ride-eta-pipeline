@@ -14,9 +14,10 @@ data/processed/*
 !data/processed/*.dvc
 *.db
 
-# Models / artifacts
+# Models / artifacts (big model binaries stay out; keep the schema contract)
 models/*
 !models/.gitkeep
+!models/feature_schema.json
 
 # MLflow
 mlruns/

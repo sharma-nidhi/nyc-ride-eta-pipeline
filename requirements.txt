@@ -1,6 +1,7 @@
 # Core data / ML
 pandas>=2.0
 numpy>=1.24
+pyarrow>=14.0        # fast Parquet read/write for processed data
 scikit-learn>=1.3
 xgboost>=2.0
 lightgbm>=4.0
