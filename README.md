@@ -1,22 +1,21 @@
 # NYC Ride ETA Prediction — End-to-End ML Pipeline
 
-**Course:** Machine Learning Engineering (PCAM ZC412) · Mini-Project (EC-1, 40%)
-**Flavor A:** Delivery / Ride ETA Prediction (Tabular · Modules M2 → M3 → M4 → M5)
-**Repo:** https://github.com/sharma-nidhi/nyc-ride-eta-pipeline
+**Course:** Machine Learning Engineering (PCAM ZC412) · EC-1 Mini-Project
+**Problem:** Delivery / Ride ETA Prediction (tabular)
 
-A production-style ML system that predicts NYC taxi trip duration (ride ETA) from trip distance,
-time-of-day, location, and passenger details — covering the full lifecycle: reliable data
-ingestion + validation, versioned data, tracked experiments, a containerized REST API, and
-monitoring with drift detection and a retraining strategy.
+Predicts NYC taxi trip duration (ride ETA) from trip distance, time-of-day, location, and
+passenger details. The project implements the full production ML lifecycle: reliable data
+ingestion and validation, versioned data, tracked experiments, a containerized REST API, and
+post-deployment monitoring with drift detection and a retraining strategy.
 
 ## Results
 | Model | RMSLE ↓ | MAE (s) | R² |
 |-------|:-------:|:-------:|:--:|
 | Linear Regression (baseline) | 0.5432 | 355 | 0.46 |
-| **HistGradientBoosting (best, `eta-v1`)** | **0.3967** | **219** | **0.71** |
+| **HistGradientBoosting (production, `eta-v1`)** | **0.3967** | **219** | **0.71** |
 
 Trained on 1,450,674 cleaned trips (99.45% of raw retained) with 9 engineered features.
-Full write-up: [`docs/model_comparison.md`](docs/model_comparison.md).
+Experiment details and model-selection rationale: [`docs/model_comparison.md`](docs/model_comparison.md).
 
 ## Architecture
 
@@ -40,16 +39,26 @@ flowchart LR
 
 DVC versions the data, Git versions the code, MLflow versions the experiments, Docker packages the service.
 
+## Tech stack
+- **Language:** Python 3.10+
+- **Data & features:** pandas, NumPy, PyArrow (Parquet)
+- **Modeling:** scikit-learn (HistGradientBoosting); XGBoost / LightGBM / CatBoost available
+- **Experiment tracking:** MLflow
+- **Data versioning:** DVC
+- **Serving:** FastAPI, Uvicorn, Pydantic, Docker
+- **Monitoring:** SQLite prediction log, PSI + σ-shift drift detection
+- **Testing:** pytest
+
 ## Repository layout
 ```
 nyc-ride-eta-pipeline/
 ├── config/config.yaml            # paths, params, thresholds
 ├── data/
-│   ├── raw/                      # Kaggle CSV (DVC-tracked, git-ignored)
+│   ├── raw/                      # source CSV (DVC-tracked, git-ignored)
 │   ├── processed/                # cleaned parquet + feature store (git-ignored)
-│   ├── download_data.py          # optional Kaggle API download
+│   ├── download_data.py          # dataset download helper
 │   └── validate.py               # schema + data-quality checks -> cleaned parquet
-├── features/build_features.py    # SHARED feature logic (train == serve)
+├── features/build_features.py    # shared feature logic (train == serve)
 ├── training/train.py             # MLflow-tracked training + model comparison
 ├── serving/
 │   ├── api.py                    # FastAPI service (/health, /predict)
@@ -61,68 +70,65 @@ nyc-ride-eta-pipeline/
 │   └── check_drift.py            # σ-shift + PSI drift detection
 ├── models/                       # eta-v1.joblib (git-ignored) + feature_schema.json
 ├── tests/test_features.py        # pytest unit tests
-├── docs/                         # setup guides + design docs (see below)
+├── docs/                         # architecture, model comparison, retraining design
 ├── Dockerfile / .dockerignore / requirements-serve.txt
 ├── requirements.txt / conftest.py / .gitignore
 └── README.md
 ```
 
-## Quickstart
-Full setup (env, Git, Kaggle, DVC): [`docs/SETUP.md`](docs/SETUP.md). Beginner walkthroughs are in
-`docs/` (VS Code, Git, DVC, Docker).
-
+## Usage
 ```bash
-# 1. environment
-python -m venv venv && venv\Scripts\activate        # (source venv/bin/activate on macOS/Linux)
+# environment
+python -m venv venv && venv\Scripts\activate        # source venv/bin/activate on macOS/Linux
 pip install -r requirements.txt
 
-# 2. data -> validate -> features  (M2)
-python data/download_data.py            # or place train.csv in data/raw/ manually
+# data -> validate -> features
 python data/validate.py                 # -> data/processed/train_clean.parquet
 python features/build_features.py       # -> features.parquet + models/feature_schema.json
 
-# 3. train + compare  (M3)
-python training/train.py                # logs to sqlite:///mlflow.db, saves models/eta-v1.joblib
+# train + compare (MLflow)
+python training/train.py                # saves models/eta-v1.joblib
 mlflow ui --backend-store-uri sqlite:///mlflow.db     # http://127.0.0.1:5000
 
-# 4. serve  (M4)
-uvicorn serving.api:app --reload --port 8000          # docs at /docs
-python serving/sample_requests.py                     # valid + invalid calls
-# or containerized:
+# serve the model
+uvicorn serving.api:app --reload --port 8000          # interactive docs at /docs
+python serving/sample_requests.py                     # sample valid + invalid calls
+# or run the container:
 docker build -t nyc-eta-api . && docker run --rm -p 8000:8000 nyc-eta-api
 
-# 5. monitor + drift  (M5)
+# monitoring + drift
 python monitoring/simulate_drift.py     # generate a traffic shift (API must be running)
-python monitoring/check_drift.py        # -> DRIFT DETECTED + monitoring/drift_report.txt
+python monitoring/check_drift.py        # -> drift report (monitoring/drift_report.txt)
 
 # tests
 pytest -q
 ```
 
-## Documentation
-- [`docs/PLAN.md`](docs/PLAN.md) — 28-day plan of action
-- [`docs/architecture.md`](docs/architecture.md) — components & contracts
-- [`docs/model_comparison.md`](docs/model_comparison.md) — experiments + model choice (M3)
-- [`docs/retraining_design.md`](docs/retraining_design.md) — drift triggers & retraining (M5)
-- Setup guides: [`SETUP`](docs/SETUP.md) · [`VS Code`](docs/VSCODE_SETUP.md) · [`Git`](docs/GIT_SETUP.md) · [`DVC`](docs/DVC_SETUP.md) · [`Docker`](docs/DOCKER_SETUP.md)
+### Example request
+```bash
+curl -X POST http://127.0.0.1:8000/predict -H "Content-Type: application/json" -d '{
+  "pickup_datetime": "2016-03-14T17:24:00",
+  "pickup_latitude": 40.7484, "pickup_longitude": -73.9857,
+  "dropoff_latitude": 40.7580, "dropoff_longitude": -73.9850,
+  "passenger_count": 1
+}'
+# -> {"eta_seconds": 405.9, "eta_minutes": 6.8, "model_version": "eta-v1"}
+```
 
-## Weekly milestones
-| Week | Module | Status |
-|------|--------|--------|
-| 1 | M2 — ingestion, validation, features, DVC `data-v1` | ✅ |
-| 2 | M3 — MLflow experiments, best model + report | ✅ |
-| 3 | M4 — FastAPI service, Docker, tested endpoints | ✅ |
-| 4 | M5 — prediction logging, drift detection, retraining design | ✅ |
+## Documentation
+- [`docs/architecture.md`](docs/architecture.md) — components and data/versioning contracts
+- [`docs/model_comparison.md`](docs/model_comparison.md) — experiments and model selection
+- [`docs/retraining_design.md`](docs/retraining_design.md) — drift monitoring and retraining strategy
 
 ## Team
 | Name | Role |
 |------|------|
-| Nidhi Sharma | ML Engineering (repo owner) |
+| Nidhi Sharma | ML Engineering |
 | Kapil Chhabra | ML Engineering |
 | Ronak Shah | ML Engineering |
 
 ## References
-- T1: *Machine Learning Production Systems*, Robert Crowe et al., O'Reilly, 2024.
-- T2: *Machine Learning Engineering*, Andriy Burkov, 2020.
-- R1: *Machine Learning Engineering with Python* (2e), A. P. McMahon, Packt, 2023.
+- Machine Learning Production Systems, Robert Crowe et al., O'Reilly, 2024.
+- Machine Learning Engineering, Andriy Burkov, 2020.
+- Machine Learning Engineering with Python (2e), A. P. McMahon, Packt, 2023.
 - Dataset: [NYC Taxi Trip Duration — Kaggle](https://www.kaggle.com/competitions/nyc-taxi-trip-duration).
