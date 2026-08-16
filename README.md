@@ -128,7 +128,4 @@ curl -X POST http://127.0.0.1:8000/predict -H "Content-Type: application/json" -
 | Ronak Shah | ML Engineering |
 
 ## References
-- Machine Learning Production Systems, Robert Crowe et al., O'Reilly, 2024.
-- Machine Learning Engineering, Andriy Burkov, 2020.
-- Machine Learning Engineering with Python (2e), A. P. McMahon, Packt, 2023.
 - Dataset: [NYC Taxi Trip Duration — Kaggle](https://www.kaggle.com/competitions/nyc-taxi-trip-duration).
