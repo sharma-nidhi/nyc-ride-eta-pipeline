@@ -1,0 +1,15 @@
+# Keep the Docker build context small & the image clean.
+venv/
+data/
+mlruns/
+mlflow.db
+mlartifacts/
+monitoring/*.db
+.git/
+.dvc/
+__pycache__/
+*.pyc
+notebooks/
+docs/
+tests/
+explore_data.py

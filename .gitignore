@@ -1,23 +1,37 @@
-# Environments
+# Python
 .venv/
 venv/
 __pycache__/
-*.pyc
-
-# Secrets and Config
-.env
-
-# Jupyter
+*.py[cod]
+.pytest_cache/
 .ipynb_checkpoints/
 
-# Data & Models (Tracked by DVC, not Git)
-data/**/*
-!data/**/.gitkeep
-!data/feature_meta.json
-models/**/*
-!models/.gitkeep
-mlruns/
+# Data files are tracked by DVC, not Git — but keep the tiny .dvc pointers & .gitkeep
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/raw/*.dvc
+!data/processed/*.dvc
+*.db
 
-# OS
+# Models / artifacts (big model binaries stay out; keep the schema contract)
+models/*
+!models/.gitkeep
+!models/feature_schema.json
+
+# MLflow
+mlruns/
+mlflow.db
+mlartifacts/
+
+# Secrets / credentials
+.env
+kaggle.json
+.kaggle/
+
+# OS / IDE
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/

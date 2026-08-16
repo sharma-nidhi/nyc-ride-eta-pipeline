@@ -1,0 +1,8 @@
+Training rows: 1,450,674 | Production rows: 82
+
+feature           train_mean   prod_mean  shift(sig)     PSI  status
+haversine_km            3.43        6.22        0.72    0.79  DRIFT
+hour                   13.61       15.41        0.28    3.65  DRIFT
+passenger_count         1.67        2.65        0.75    0.70  DRIFT
+
+RESULT: DRIFT DETECTED -> retraining recommended
