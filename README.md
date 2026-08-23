@@ -63,16 +63,42 @@ git add data/processed/*.dvc models/*.dvc data/contracts/feature_registry.json
 git commit -m "feat(dvc): versioned dataset slice"
 ```
 
-### 4. Train Models
+### 4. Train Models (Phase 2)
 
-Train the baseline model on the currently active dataset.
+Train the baseline and all advanced models on the currently active dataset.
 *Note: The training script uses a strictly chronological 80/20 split to prevent future data leakage (M2 rule). MLflow logs are stored in a lightweight SQLite database (`mlflow.db`), which is ignored by Git.*
 
+**Train all models (Ridge, XGBoost, LightGBM, CatBoost):**
+
 ```bash
-python -m src.models.train
+python -m src.models.train --model all
 ```
 
-To view your experiment history, metrics, and artifacts:
+**Train a single model:**
+
+```bash
+python -m src.models.train --model ridge
+python -m src.models.train --model xgboost
+```
+
+### 5. Compare Models & Select Champion
+
+Compare all trained MLflow runs and promote the best model:
+
+```bash
+# Rank all runs by MAE (lower is better)
+python -m src.models.compare --metric mae
+
+# Rank by R2 (higher is better — use --no-ascending or omit --ascending)
+python -m src.models.compare --metric r2 --ascending
+
+# Promote the best run as the champion model
+python -m src.models.registry
+```
+
+The champion metadata is saved to `models/champion.json` for Phase 3 serving.
+
+### 6. View Experiment History
 
 ```bash
 mlflow ui --backend-store-uri sqlite:///mlflow.db
@@ -80,7 +106,7 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db
 
 *(Open <http://127.0.0.1:5000> in your browser)*
 
-### 5. Start API (Phase 3)
+### 7. Start API (Phase 3 — upcoming)
 
 ```bash
 uvicorn src.serving.api:app --reload
@@ -88,11 +114,29 @@ uvicorn src.serving.api:app --reload
 
 ## 📈 Performance Summary
 
-*(To be updated after Phase 2)*
+| Model (Full Dataset) | MAE | RMSE | R² |
+| ----- | --: | --: | --: |
+| Ridge (Baseline) | 292.80s | 443.03s | 0.6148 |
+| XGBoost | 245.11s | 384.68s | 0.7096 |
+| LightGBM | 245.07s | 384.64s | 0.7097 |
+| CatBoost | 246.17s | 386.22s | 0.7073 |
+| **Champion** (LightGBM) | **245.07s** | **384.64s** | **0.7097** |
 
-- **Baseline RMSE:** TBD
-- **Best Model RMSE:** TBD
+*Metrics from full-dataset 80/20 chronological split. Boosting models outperform Ridge baseline by ~16% on MAE. LightGBM and XGBoost are nearly tied; LightGBM edges ahead by 0.04s.*
 
 ## 🏗️ Architecture
 
-Raw Data $\rightarrow$ `ingest.py` $\rightarrow$ `validate.py` $\rightarrow$ `preprocess.py` $\rightarrow$ `train.py` $\rightarrow$ MLflow $\rightarrow$ FastAPI
+```mermaid
+graph LR
+    raw["NYC.csv"] --> inject
+    inject["ingest.py"] --> valid
+    valid["validate.py"] --> fp
+    fp["feature_pipeline.py"] --> train
+    train["train.py"] --> mlflow
+    mlflow["MLflow UI"] --> compare
+    compare["compare.py"] --> registry
+    registry["champion.json"] --> api
+    api["FastAPI serving"] --> user["Client"]
+```
+
+Raw Data → `ingest.py` → `validate.py` → `preprocess.py` → `feature_pipeline.py` → `train.py` → MLflow → `compare.py` → `registry.py` → FastAPI

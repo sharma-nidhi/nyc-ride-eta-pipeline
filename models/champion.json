@@ -1,0 +1,14 @@
+{
+  "run_id": "ca1ba45a3f104b99a633edb1eab14deb",
+  "run_name": "LIGHTGBM",
+  "status": "FINISHED",
+  "primary_metric": "mae",
+  "metrics": {
+    "mae": 245.07270677897114,
+    "rmse": 384.64010843982135,
+    "r2": 0.7096601358419259
+  },
+  "feature_count": "9",
+  "dvc_slice": "full",
+  "promoted_at": null
+}
