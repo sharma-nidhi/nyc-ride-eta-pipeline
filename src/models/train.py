@@ -62,7 +62,7 @@ def train_baseline_model(X: pd.DataFrame, y: pd.Series):
 
     # 3. MLflow Tracking
     mlflow.set_experiment("NYC-ETA-Prediction")
-    mlflow.sklearn.autolog() # Automatically log params, metrics, and model
+    mlflow.sklearn.autolog(log_models=False) # Keep autolog params/metrics, manual log_model handles model artifact
     
     with mlflow.start_run(run_name="Baseline_Ridge"):
         logger.info("Training Baseline Ridge Model...")
