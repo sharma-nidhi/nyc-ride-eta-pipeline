@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "feature_set": "nyc_eta_features_v1",
+  "feature_columns": [
+    {
+      "name": "passenger_count",
+      "type": "float32",
+      "transform": "RobustScaler",
+      "category": "numeric"
+    },
+    {
+      "name": "hour_sin",
+      "type": "float32",
+      "transform": "RobustScaler",
+      "category": "numeric"
+    },
+    {
+      "name": "hour_cos",
+      "type": "float32",
+      "transform": "RobustScaler",
+      "category": "numeric"
+    },
+    {
+      "name": "day_of_week",
+      "type": "float32",
+      "transform": "RobustScaler",
+      "category": "numeric"
+    },
+    {
+      "name": "haversine_dist_km",
+      "type": "float32",
+      "transform": "RobustScaler",
+      "category": "numeric"
+    },
+    {
+      "name": "vendor_id",
+      "type": "category",
+      "transform": "OrdinalEncoder",
+      "category": "categorical"
+    },
+    {
+      "name": "store_and_fwd_flag",
+      "type": "category",
+      "transform": "OrdinalEncoder",
+      "category": "categorical"
+    },
+    {
+      "name": "is_weekend",
+      "type": "float32",
+      "transform": "None (Passthrough)",
+      "category": "passthrough"
+    },
+    {
+      "name": "is_rush_hour",
+      "type": "float32",
+      "transform": "None (Passthrough)",
+      "category": "passthrough"
+    }
+  ],
+  "dvc_slice": "end_month=1",
+  "row_count": 227291,
+  "generated_at": "2026-08-23T19:41:49.749383"
+}

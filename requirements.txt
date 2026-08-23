@@ -4,6 +4,8 @@ numpy
 scikit-learn
 joblib
 pyarrow
+matplotlib
+seaborn
 
 # ML Experimentation & Modeling - Phase 2
 mlflow
@@ -11,6 +13,9 @@ xgboost
 lightgbm
 catboost
 optuna
+
+# Notebook Support
+ipykernel
 
 # Data Versioning
 dvc

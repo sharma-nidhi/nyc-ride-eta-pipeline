@@ -39,12 +39,14 @@ USECOLS = [
 ]
 
 
-def load_raw(sample_mode: bool = False, sample_size: int = 100_000) -> pd.DataFrame:
+def load_raw(sample_mode: bool = False, sample_size: int = 100_000, end_month: int | None = None) -> pd.DataFrame:
     """Load NYC Taxi raw CSV with memory-optimised dtypes.
 
     Args:
         sample_mode: If True, loads only `sample_size` rows. Use during development.
         sample_size: Number of rows to load in sample mode.
+        end_month: Filter rows to pickup_datetime <= end of given month (1-12).
+                   None = no filter (full dataset).
 
     Returns:
         Raw DataFrame with correct column types.
@@ -63,6 +65,13 @@ def load_raw(sample_mode: bool = False, sample_size: int = 100_000) -> pd.DataFr
 
     # Sort chronologically — required for time-based train/test split (M2 rule)
     df = df.sort_values("pickup_datetime").reset_index(drop=True)
+
+    # Time-based slicing for DVC dataset versioning
+    if end_month is not None:
+        cutoff = pd.Timestamp(year=2016, month=end_month + 1, day=1)
+        before = len(df)
+        df = df[df["pickup_datetime"] < cutoff].reset_index(drop=True)
+        logger.info("Sliced to month %d: %d → %d rows", end_month, before, len(df))
 
     logger.info(
         "Loaded %d rows | Memory: %.1f MB",

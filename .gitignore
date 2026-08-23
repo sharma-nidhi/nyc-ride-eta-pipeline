@@ -10,12 +10,26 @@ __pycache__/
 # Jupyter
 .ipynb_checkpoints/
 
-# Data & Models (Tracked by DVC, not Git)
-data/**/*
-!data/**/.gitkeep
-!data/feature_meta.json
-models/**/*
-!models/.gitkeep
+# Data & Models (DVC: ignore heavy files, track .dvc pointers)
+data/*.parquet
+data/*.csv
+data/**/*.parquet
+data/**/*.csv
+data/raw/*.zip
+data/raw/*.gz
+
+# Generated Artifacts (reproducible by re-running pipeline)
+data/validation_report.json
+models/*.pkl
+models/*.pyt
+models/**/*.pkl
+models/**/*.pyt
+
+# DVC pointers ARE tracked by Git (no negative patterns needed)
+
+# MLflow (SQLite db + logs + artifacts)
+mlflow.db
+mlflow.db-*
 mlruns/
 
 # OS
