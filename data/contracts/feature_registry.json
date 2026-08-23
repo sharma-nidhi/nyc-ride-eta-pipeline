@@ -57,7 +57,7 @@
       "category": "passthrough"
     }
   ],
-  "dvc_slice": "end_month=3",
-  "row_count": 716776,
-  "generated_at": "2026-08-23T20:10:51.037723"
+  "dvc_slice": "full",
+  "row_count": 1443505,
+  "generated_at": "2026-08-23T20:18:47.839825"
 }
