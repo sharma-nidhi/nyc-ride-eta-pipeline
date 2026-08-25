@@ -9,10 +9,13 @@ import json
 import pathlib
 import mlflow
 import logging
+import shutil
 
 logger = logging.getLogger(__name__)
 
 CHAMPION_PATH = pathlib.Path("models/champion.json")
+MODEL_OUTPUT_DIR = pathlib.Path("models/artifacts")
+SERVING_MODEL_PATH = pathlib.Path("models/serving/model.pkl")
 MLFLOW_TRACKING_URI = "sqlite:///mlflow.db"
 EXPERIMENT_NAME = "NYC-ETA-Prediction"
 
@@ -64,11 +67,23 @@ def promote_champion(primary_metric: str = "mae"):
     with open(CHAMPION_PATH, "w", encoding="utf-8") as f:
         json.dump(champion, f, indent=2)
 
+    # Export a stable serving artifact path so deployment images only need one model file.
+    model_type = champion["run_name"].lower()
+    source_model_path = MODEL_OUTPUT_DIR / f"{model_type}.pkl"
+    if not source_model_path.exists():
+        raise FileNotFoundError(
+            f"Champion artifact '{source_model_path}' not found. "
+            "Ensure training artifacts exist before promoting."
+        )
+    SERVING_MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source_model_path, SERVING_MODEL_PATH)
+
     logger.info("Champion updated: run %s (MAE=%.2f, RMSE=%.2f, R2=%.4f)",
                 champion["run_id"][:8],
                 champion["metrics"]["mae"],
                 champion["metrics"]["rmse"],
                 champion["metrics"]["r2"])
+    logger.info("Serving artifact exported to %s", SERVING_MODEL_PATH)
 
     return champion
 
@@ -103,3 +118,4 @@ if __name__ == "__main__":
     print(f"  R2   : {champion['metrics']['r2']:.4f}")
     print(f"  Slice: {champion['dvc_slice']}")
     print(f"\nArtifact saved to {CHAMPION_PATH}")
+    print(f"Serving model exported to {SERVING_MODEL_PATH}")

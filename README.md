@@ -18,8 +18,10 @@ This project implements a production-ready ML system including data validation, 
 - **Data Engineering:** Pandas, PyArrow (Parquet)
 - **ML Pipeline:** Scikit-Learn
 - **Experiment Tracking:** MLflow
+- **Data Contract:** `src/contract.py` (shared bounds/feature lists across validation, training, serving)
 - **Models:** XGBoost, LightGBM, CatBoost
 - **Serving:** FastAPI, Uvicorn, Docker
+- **Testing:** pytest (15 tests: valid requests + input validation)
 - **Data Versioning:** DVC
 
 ## 🚀 Getting Started
@@ -63,7 +65,7 @@ git add data/processed/*.dvc models/*.dvc data/contracts/feature_registry.json
 git commit -m "feat(dvc): versioned dataset slice"
 ```
 
-### 4. Train Models (Phase 2)
+### 4. Train Models
 
 Train the baseline and all advanced models on the currently active dataset.
 *Note: The training script uses a strictly chronological 80/20 split to prevent future data leakage (M2 rule). MLflow logs are stored in a lightweight SQLite database (`mlflow.db`), which is ignored by Git.*
@@ -96,7 +98,37 @@ python -m src.models.compare --metric r2 --ascending
 python -m src.models.registry
 ```
 
-The champion metadata is saved to `models/champion.json` for Phase 3 serving.
+The promotion step now exports both serving artifacts used in deployment:
+
+- `models/champion.json` (champion metadata)
+- `models/serving/model.pkl` (single champion model artifact used by the API image)
+
+If you want model promotion to be reproducible across machines, version the
+promoted serving model with DVC and commit the pointer:
+
+```bash
+dvc add models/serving/model.pkl
+git add models/serving/model.pkl.dvc models/champion.json
+git commit -m "feat(model): promote champion serving artifact"
+```
+
+Verify the serving artifact exists before container builds:
+
+```bash
+ls models/serving/model.pkl
+```
+
+**Performance Summary (Full Dataset):**
+
+| Model | MAE | RMSE | R² |
+| ----- | --: | --: | --: |
+| Ridge (Baseline) | 292.80s | 443.03s | 0.6148 |
+| XGBoost | 245.11s | 384.68s | 0.7096 |
+| LightGBM | 245.07s | 384.64s | 0.7097 |
+| CatBoost | 246.17s | 386.22s | 0.7073 |
+| **Champion**(LightGBM) | 245.07s | 384.64s | 0.7097 |
+
+*Boosting models outperform Ridge baseline by ~16% on MAE. LightGBM and XGBoost are nearly tied; LightGBM edges ahead by 0.04s.*
 
 ### 6. View Experiment History
 
@@ -106,23 +138,94 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db
 
 *(Open <http://127.0.0.1:5000> in your browser)*
 
-### 7. Start API (Phase 3 — upcoming)
+### 7. Start API
+
+Start the FastAPI server (loads champion model at startup):
 
 ```bash
-uvicorn src.serving.api:app --reload
+python -m uvicorn src.serving.api:app --reload
 ```
 
-## 📈 Performance Summary
+*(Open <http://127.0.0.1:8000/docs> for Swagger UI)*
 
-| Model (Full Dataset) | MAE | RMSE | R² |
-| ----- | --: | --: | --: |
-| Ridge (Baseline) | 292.80s | 443.03s | 0.6148 |
-| XGBoost | 245.11s | 384.68s | 0.7096 |
-| LightGBM | 245.07s | 384.64s | 0.7097 |
-| CatBoost | 246.17s | 386.22s | 0.7073 |
-| **Champion** (LightGBM) | **245.07s** | **384.64s** | **0.7097** |
+**Endpoints:**
 
-*Metrics from full-dataset 80/20 chronological split. Boosting models outperform Ridge baseline by ~16% on MAE. LightGBM and XGBoost are nearly tied; LightGBM edges ahead by 0.04s.*
+- `GET /health` — Health check
+- `GET /model-info` — Champion model metadata (type, metrics, run ID)
+- `POST /predict` — Single trip ETA prediction
+- `POST /predict/batch` — Batch predictions (up to 100 trips)
+
+**Example Prediction Request:**
+
+```json
+{
+  "pickup_datetime": "2016-05-15T14:30:00",
+  "passenger_count": 2,
+  "pickup_latitude": 40.748817,
+  "pickup_longitude": -73.985428,
+  "dropoff_latitude": 40.742563,
+  "dropoff_longitude": -73.98748,
+  "vendor_id": 1,
+  "store_and_fwd_flag": "N"
+}
+```
+
+**Example Response:**
+
+```json
+{ "eta_seconds": 318.92 }
+```
+
+### 8. Run Tests (pytest)
+
+Run the API test suite before packaging/deployment:
+
+```bash
+python -m pytest tests/test_api.py -q
+```
+
+For detailed test names/output:
+
+```bash
+python -m pytest tests/test_api.py -v
+```
+
+### 9. Run with Docker
+
+Build and start the API container (only champion model baked in at build time):
+
+```bash
+# Prerequisite: export current champion serving artifact
+python -m src.models.registry
+```
+
+Run pre-build validation checks (WSL/Linux):
+
+```bash
+bash scripts/docker_preflight.sh
+```
+
+Optional deep check (builds API image and validates native ML imports inside container):
+
+```bash
+bash scripts/docker_preflight.sh --smoke
+```
+
+```bash
+docker build -f docker/Dockerfile.api -t eta-api .
+docker run -p 8000:8000 eta-api
+```
+
+Or run with Docker Compose (API + MLflow UI, each with its own Dockerfile):
+
+```bash
+# From project root
+docker compose -f docker/docker-compose.yml build
+docker compose -f docker/docker-compose.yml up -d
+```
+
+- **API:** <http://127.0.0.1:8000/docs> (Swagger UI)
+- **MLflow UI:** <http://127.0.0.1:5000>
 
 ## 🏗️ Architecture
 
@@ -136,7 +239,14 @@ graph LR
     mlflow["MLflow UI"] --> compare
     compare["compare.py"] --> registry
     registry["champion.json"] --> api
+    contract["contract.py 👈"] -.- valid
+    contract -.- fp
+    contract -.- api
     api["FastAPI serving"] --> user["Client"]
 ```
 
 Raw Data → `ingest.py` → `validate.py` → `preprocess.py` → `feature_pipeline.py` → `train.py` → MLflow → `compare.py` → `registry.py` → FastAPI
+
+`src/contract.py` is the **single source of truth** shared by `validate.py`, `feature_pipeline.py`, and `serving/schemas.py`. All bounds and feature lists flow from one file — prevents train-serving skew.
+
+`src/contract.py` is the **single source of truth** shared by `validate.py`, `feature_pipeline.py`, and `serving/schemas.py`. All bounds and feature lists flow from one file.

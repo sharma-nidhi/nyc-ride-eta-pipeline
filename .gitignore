@@ -32,6 +32,9 @@ mlflow.db
 mlflow.db-*
 mlruns/
 
+# CatBoost auto-generated training logs
+catboost_info/
+
 # OS
 .DS_Store
 Thumbs.db

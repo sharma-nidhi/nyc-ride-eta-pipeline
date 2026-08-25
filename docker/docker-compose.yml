@@ -1,0 +1,28 @@
+services:
+  eta-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    container_name: eta-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  mlflow:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.mlflow
+    container_name: mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ..:/app
+    working_dir: /app
+    restart: unless-stopped

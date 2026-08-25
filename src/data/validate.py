@@ -12,12 +12,15 @@ import json
 import pathlib
 from typing import Tuple, Dict, Any
 
-logger = logging.getLogger(__name__)
+from src.contract import (
+    NYC_LAT_MIN, NYC_LAT_MAX,
+    NYC_LON_MIN, NYC_LON_MAX,
+    PASSENGER_MIN, PASSENGER_MAX,
+    DURATION_MIN, DURATION_MAX,
+    SPEED_MAX,
+)
 
-# NYC Bounding Box for basic coordinate validation
-# These bounds ensure the trip is actually within the Greater NYC area
-NYC_LAT_BOUNDS = (40.5, 42.0)
-NYC_LON_BOUNDS = (-75.0, -72.0)
+logger = logging.getLogger(__name__)
 
 def validate_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """
@@ -40,15 +43,15 @@ def validate_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     report["failures"]["nulls"] = int(null_mask.sum())
     
     # 2. Range Checks
-    # Passenger count must be physically possible (1-9)
-    pass_mask = (df["passenger_count"] < 1) | (df["passenger_count"] > 9)
+    # Passenger count must be physically possible
+    pass_mask = (df["passenger_count"] < PASSENGER_MIN) | (df["passenger_count"] > PASSENGER_MAX)
     report["failures"]["invalid_passenger_count"] = int(pass_mask.sum())
-    
+
     # Bounding Box check: coordinates must be within the defined NYC range
-    lat_mask = (df["pickup_latitude"] < NYC_LAT_BOUNDS[0]) | (df["pickup_latitude"] > NYC_LAT_BOUNDS[1]) | \
-               (df["dropoff_latitude"] < NYC_LAT_BOUNDS[0]) | (df["dropoff_latitude"] > NYC_LAT_BOUNDS[1])
-    lon_mask = (df["pickup_longitude"] < NYC_LON_BOUNDS[0]) | (df["pickup_longitude"] > NYC_LON_BOUNDS[1]) | \
-               (df["dropoff_longitude"] < NYC_LON_BOUNDS[0]) | (df["dropoff_longitude"] > NYC_LON_BOUNDS[1])
+    lat_mask = (df["pickup_latitude"] < NYC_LAT_MIN) | (df["pickup_latitude"] > NYC_LAT_MAX) | \
+               (df["dropoff_latitude"] < NYC_LAT_MIN) | (df["dropoff_latitude"] > NYC_LAT_MAX)
+    lon_mask = (df["pickup_longitude"] < NYC_LON_MIN) | (df["pickup_longitude"] > NYC_LON_MAX) | \
+               (df["dropoff_longitude"] < NYC_LON_MIN) | (df["dropoff_longitude"] > NYC_LON_MAX)
     report["failures"]["out_of_bounds_coords"] = int((lat_mask | lon_mask).sum())
     
     # 3. Logic Checks

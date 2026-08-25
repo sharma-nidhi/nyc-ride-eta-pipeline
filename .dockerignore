@@ -18,6 +18,8 @@ data/raw
 data/processed
 models/*.pkl
 models/**/*.pkl
+!models/feature_pipeline.pkl
+!models/serving/model.pkl
 
 # MLflow local tracking artifacts
 mlruns

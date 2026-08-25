@@ -16,36 +16,13 @@ In a production system, this maps directly to the **Feature Registry** inside
 a Feature Store (e.g., Feast, Tecton, or Hopsworks).
 """
 
-FEATURE_VERSION = "1.0.0"
-FEATURE_SET_NAME = "nyc_eta_features_v1"
-
-# ---------------------------------------------------------------------------
-# OUTPUT FEATURE CONTRACT
-# ---------------------------------------------------------------------------
-# These lists define the exact columns the trained model expects in its input
-# DataFrame. They are shared by:
-#   1. The Feature Pipeline  (to know which sklearn transforms to apply)
-#   2. The Preprocess script (to build the JSON registry)
-#   3. The FastAPI service   (to validate incoming JSON requests)
-# ---------------------------------------------------------------------------
-
-NUMERIC_COLS = [
-    "passenger_count",
-    "hour_sin",
-    "hour_cos",
-    "day_of_week",
-    "haversine_dist_km",
-]
-
-CATEGORICAL_COLS = [
-    "vendor_id",
-    "store_and_fwd_flag",
-]
-
-PASSTHROUGH_COLS = [
-    "is_weekend",
-    "is_rush_hour",
-]
+from src.contract import (
+    SCHEMA_VERSION as FEATURE_VERSION,
+    FEATURE_SET_NAME,
+    NUMERIC_COLS,
+    CATEGORICAL_COLS,
+    PASSTHROUGH_COLS,
+)
 
 
 def get_feature_schema() -> dict:
