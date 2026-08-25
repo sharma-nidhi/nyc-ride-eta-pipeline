@@ -4,7 +4,7 @@ An end-to-end ML pipeline for predicting trip durations in NYC.
 
 ## 📌 Project Overview
 
-This project implements a production-ready ML system including data validation, a robust feature engineering pipeline, model experimentation tracking with MLflow, and a REST API for real-time predictions.
+This project implements a production-ready ML system including data validation, a robust feature engineering pipeline, model experimentation tracking with MLflow, a REST API for real-time predictions, and automated monitoring with drift detection and retraining triggers.
 
 ## Team
 
@@ -14,7 +14,7 @@ This project implements a production-ready ML system including data validation, 
 
 ## Tech Stack
 
-- **Language:** Python 3.10
+- **Language:** Python 3.11
 - **Data Engineering:** Pandas, PyArrow (Parquet)
 - **ML Pipeline:** Scikit-Learn
 - **Experiment Tracking:** MLflow
@@ -176,6 +176,18 @@ python -m uvicorn src.serving.api:app --reload
 { "eta_seconds": 318.92 }
 ```
 
+### 7.5 Run the Demo Playbook
+
+Test the API with curated valid + invalid requests:
+
+```bash
+python -m src.scripts.demo_cli
+```
+
+Sends a batch of realistic predictions (single + bulk) and edge cases
+(out-of-range coordinates, missing fields, bad vendor IDs) to verify that
+validation and Pydantic schemas are working as expected.
+
 ### 8. Run Tests (pytest)
 
 Run the API test suite before packaging/deployment:
@@ -202,13 +214,13 @@ python -m src.models.registry
 Run pre-build validation checks (WSL/Linux):
 
 ```bash
-bash scripts/docker_preflight.sh
+bash docker/docker_preflight.sh
 ```
 
 Optional deep check (builds API image and validates native ML imports inside container):
 
 ```bash
-bash scripts/docker_preflight.sh --smoke
+bash docker/docker_preflight.sh --smoke
 ```
 
 ```bash
