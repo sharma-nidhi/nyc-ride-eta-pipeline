@@ -23,6 +23,8 @@ from typing import Tuple, Dict, Any
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
+from src.reproducibility import DEFAULT_RANDOM_SEED, seed_everything
+
 logger = logging.getLogger(__name__)
 
 # Paths
@@ -42,13 +44,13 @@ MLFLOW_EXPERIMENT = "NYC-ETA-Prediction"
 # Model factories
 # ---------------------------------------------------------------------------
 
-def train_ridge(X_train, y_train, X_val, y_val):
+def train_ridge(X_train, y_train, X_val, y_val, seed: int = DEFAULT_RANDOM_SEED):
     """Baseline Ridge Regression model."""
     model = Ridge(alpha=1.0)
-    return model, "Ridge", {"alpha": 1.0}
+    return model, "Ridge", {"alpha": 1.0, "random_seed": seed}
 
 
-def train_xgboost(X_train, y_train, X_val, y_val):
+def train_xgboost(X_train, y_train, X_val, y_val, seed: int = DEFAULT_RANDOM_SEED):
     """XGBoost model."""
     import xgboost as xgb  # noqa: F811
     model = xgb.XGBRegressor(
@@ -57,7 +59,7 @@ def train_xgboost(X_train, y_train, X_val, y_val):
         learning_rate=0.05,
         subsample=0.8,
         colsample_bytree=0.8,
-        random_state=42,
+        random_state=seed,
         n_jobs=-1,
     )
     return model, "XGBoost", {
@@ -66,10 +68,11 @@ def train_xgboost(X_train, y_train, X_val, y_val):
         "learning_rate": 0.05,
         "subsample": 0.8,
         "colsample_bytree": 0.8,
+        "random_seed": seed,
     }
 
 
-def train_lightgbm(X_train, y_train, X_val, y_val):
+def train_lightgbm(X_train, y_train, X_val, y_val, seed: int = DEFAULT_RANDOM_SEED):
     """LightGBM model."""
     import lightgbm as lgb  # noqa: F811
     model = lgb.LGBMRegressor(
@@ -78,7 +81,7 @@ def train_lightgbm(X_train, y_train, X_val, y_val):
         learning_rate=0.05,
         subsample=0.8,
         colsample_bytree=0.8,
-        random_state=42,
+        random_state=seed,
         n_jobs=-1,
         verbose=-1,
     )
@@ -88,10 +91,11 @@ def train_lightgbm(X_train, y_train, X_val, y_val):
         "learning_rate": 0.05,
         "subsample": 0.8,
         "colsample_bytree": 0.8,
+        "random_seed": seed,
     }
 
 
-def train_catboost(X_train, y_train, X_val, y_val):
+def train_catboost(X_train, y_train, X_val, y_val, seed: int = DEFAULT_RANDOM_SEED):
     """CatBoost model."""
     import catboost as cb  # noqa: F811
     model = cb.CatBoostRegressor(
@@ -100,7 +104,7 @@ def train_catboost(X_train, y_train, X_val, y_val):
         learning_rate=0.05,
         subsample=0.8,
         colsample_bylevel=0.8,
-        random_seed=42,
+        random_seed=seed,
         verbose=0,
     )
     return model, "CatBoost", {
@@ -109,6 +113,7 @@ def train_catboost(X_train, y_train, X_val, y_val):
         "learning_rate": 0.05,
         "subsample": 0.8,
         "colsample_bylevel": 0.8,
+        "random_seed": seed,
     }
 
 
@@ -158,7 +163,8 @@ def log_validation_report():
 
 def run_training(model_type: str = "ridge",
                  X: pd.DataFrame | None = None,
-                 y: pd.Series | None = None) -> Tuple:
+                 y: pd.Series | None = None,
+                 seed: int = DEFAULT_RANDOM_SEED) -> Tuple:
     """Train a single model type with full MLflow tracking."""
     if X is None or y is None:
         X = pd.read_parquet(PROCESSED_X)
@@ -171,7 +177,8 @@ def run_training(model_type: str = "ridge",
         raise ValueError(f"Unknown model type '{model_type}'. Choose from {list(TRAINERS.keys())}")
 
     logger.info("Training %s model ...", model_type.upper())
-    model, friendly_name, params = trainer(X_train, y_train, X_val, y_val)
+    seed_everything(seed)
+    model, friendly_name, params = trainer(X_train, y_train, X_val, y_val, seed=seed)
 
     mlflow.set_experiment(MLFLOW_EXPERIMENT)
     mlflow.sklearn.autolog(disable=True)
@@ -181,6 +188,7 @@ def run_training(model_type: str = "ridge",
         mlflow.log_param("train_size", len(X_train))
         mlflow.log_param("val_size", len(X_val))
         mlflow.log_param("x_null_fraction", float(X.isna().mean().mean()))
+        mlflow.log_param("global_random_seed", seed)
 
         # Model params
         mlflow.log_params(params)
@@ -226,11 +234,12 @@ def run_training(model_type: str = "ridge",
 
 
 def run_all_models(X: pd.DataFrame | None = None,
-                   y: pd.Series | None = None) -> dict[str, dict]:
+                   y: pd.Series | None = None,
+                   seed: int = DEFAULT_RANDOM_SEED) -> dict[str, dict]:
     """Train all available models and return {model_type: metrics}."""
     results = {}
     for model_type in TRAINERS:
-        _, metrics = run_training(model_type, X, y)
+        _, metrics = run_training(model_type, X, y, seed=seed)
         results[model_type] = metrics
     return results
 
@@ -250,6 +259,12 @@ if __name__ == "__main__":
         default="all",
         help="Model type to train (default: all)",
     )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=DEFAULT_RANDOM_SEED,
+        help="Global random seed for reproducible training",
+    )
     args = parser.parse_args()
 
     try:
@@ -258,12 +273,12 @@ if __name__ == "__main__":
         y = pd.read_parquet(PROCESSED_Y).squeeze()
 
         if args.model == "all":
-            results = run_all_models(X, y)
+            results = run_all_models(X, y, seed=args.seed)
             print("\n=== Training Summary ===")
             for name, m in results.items():
                 print(f"  {name:12s}  MAE: {m['mae']:8.2f}s  RMSE: {m['rmse']:8.2f}s  R2: {m['r2']:.4f}")
         else:
-            _, metrics = run_training(args.model, X, y)
+            _, metrics = run_training(args.model, X, y, seed=args.seed)
             print(f"\n--- {args.model.upper()} Training Complete ---")
             print(f"MAE:  {metrics['mae']:.2f}s")
             print(f"RMSE: {metrics['rmse']:.2f}s")

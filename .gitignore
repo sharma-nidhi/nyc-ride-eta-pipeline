@@ -20,6 +20,12 @@ data/raw/*.gz
 
 # Generated Artifacts (reproducible by re-running pipeline)
 data/validation_report.json
+data/monitoring/*.jsonl
+data/monitoring/*.json
+!data/monitoring/.gitkeep
+reports/*
+!reports/.gitkeep
+reports/drift/.gitkeep
 models/*.pkl
 models/*.pyt
 models/**/*.pkl

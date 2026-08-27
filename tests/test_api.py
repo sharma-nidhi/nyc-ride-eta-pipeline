@@ -17,7 +17,7 @@ client = TestClient(app)
 # ---------------------------------------------------------------------------
 
 VALID_REQUEST = {
-    "pickup_datetime": "2016-05-15T14:30:00",
+    "pickup_datetime": "2016-05-15T14:30:00Z",
     "passenger_count": 2,
     "pickup_latitude": 40.748817,
     "pickup_longitude": -73.985428,
@@ -123,6 +123,11 @@ class TestInputValidation:
     def test_invalid_vendor_id(self):
         bad = VALID_REQUEST.copy()
         bad["vendor_id"] = 3  # only 1 or 2
+        assert client.post("/predict", json=bad).status_code == 422
+
+    def test_pickup_datetime_requires_timezone(self):
+        bad = VALID_REQUEST.copy()
+        bad["pickup_datetime"] = "2016-05-15T14:30:00"  # missing timezone suffix
         assert client.post("/predict", json=bad).status_code == 422
 
     def test_invalid_store_and_fwd_flag(self):

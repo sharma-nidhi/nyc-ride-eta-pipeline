@@ -59,7 +59,7 @@ def run_demo():
     # --- Valid Scenarios ---
     print("\n🟢 [Valid Single Prediction: Manhattan → Central Park, Friday 6PM]")
     api_call("POST", f"{BASE_URL}/predict", {
-        "pickup_datetime": "2016-05-15T18:00:00",
+        "pickup_datetime": "2016-05-15T18:00:00Z",
         "pickup_latitude": 40.7128, "pickup_longitude": -74.0060,
         "dropoff_latitude": 40.7831, "dropoff_longitude": -73.9712,
         "passenger_count": 2,
@@ -69,19 +69,19 @@ def run_demo():
     print("🟢 [Valid Batch Prediction: 5 diverse trips]")
     api_call("POST", f"{BASE_URL}/predict/batch", {
         "requests": [
-            {"pickup_datetime": "2016-05-15T08:00:00", "pickup_latitude": 40.7128, "pickup_longitude": -74.0060,
+            {"pickup_datetime": "2016-05-15T08:00:00Z", "pickup_latitude": 40.7128, "pickup_longitude": -74.0060,
              "dropoff_latitude": 40.7831, "dropoff_longitude": -73.9712,
              "passenger_count": 2, "vendor_id": 1, "store_and_fwd_flag": "N"},
-            {"pickup_datetime": "2016-05-15T14:30:00", "pickup_latitude": 40.7484, "pickup_longitude": -73.9857,
+            {"pickup_datetime": "2016-05-15T14:30:00Z", "pickup_latitude": 40.7484, "pickup_longitude": -73.9857,
              "dropoff_latitude": 40.7411, "dropoff_longitude": -73.9897,
              "passenger_count": 1, "vendor_id": 2, "store_and_fwd_flag": "N"},
-            {"pickup_datetime": "2016-05-15T23:00:00", "pickup_latitude": 40.6892, "pickup_longitude": -74.1745,
+            {"pickup_datetime": "2016-05-15T23:00:00Z", "pickup_latitude": 40.6892, "pickup_longitude": -74.1745,
              "dropoff_latitude": 40.7589, "dropoff_longitude": -73.9851,
              "passenger_count": 4, "vendor_id": 1, "store_and_fwd_flag": "N"},
-            {"pickup_datetime": "2016-05-15T16:00:00", "pickup_latitude": 40.7527, "pickup_longitude": -73.9772,
+            {"pickup_datetime": "2016-05-15T16:00:00Z", "pickup_latitude": 40.7527, "pickup_longitude": -73.9772,
              "dropoff_latitude": 40.7769, "dropoff_longitude": -73.9821,
              "passenger_count": 2, "vendor_id": 1, "store_and_fwd_flag": "N"},
-            {"pickup_datetime": "2016-05-15T10:00:00", "pickup_latitude": 40.7209, "pickup_longitude": -73.9499,
+            {"pickup_datetime": "2016-05-15T10:00:00Z", "pickup_latitude": 40.7209, "pickup_longitude": -73.9499,
              "dropoff_latitude": 40.7480, "dropoff_longitude": -73.9855,
              "passenger_count": 1, "vendor_id": 1, "store_and_fwd_flag": "N"},
         ]
@@ -90,7 +90,7 @@ def run_demo():
     # --- Invalid / Edge Cases ---
     print("\n🔴 [Invalid: Out-of-Range Coordinates (LA instead of NYC)]")
     api_call("POST", f"{BASE_URL}/predict", {
-        "pickup_datetime": "2016-05-15T12:00:00",
+        "pickup_datetime": "2016-05-15T12:00:00Z",
         "pickup_latitude": 34.0, "pickup_longitude": -118.0, "dropoff_latitude": 34.1, "dropoff_longitude": -118.1,
         "passenger_count": 1, "vendor_id": 1, "store_and_fwd_flag": "N"
     }, endpoint_desc="la_coords")
@@ -103,14 +103,14 @@ def run_demo():
 
     print("🔴 [Invalid: Too Many Passengers (>9)]")
     api_call("POST", f"{BASE_URL}/predict", {
-        "pickup_datetime": "2016-05-15T08:00:00",
+        "pickup_datetime": "2016-05-15T08:00:00Z",
         "pickup_latitude": 40.7, "pickup_longitude": -74.0, "dropoff_latitude": 40.8, "dropoff_longitude": -73.9,
         "passenger_count": 10, "vendor_id": 1, "store_and_fwd_flag": "N"
     }, endpoint_desc="too_many_passengers")
 
     print("🔴 [Invalid: Wrong Vendor ID]")
     api_call("POST", f"{BASE_URL}/predict", {
-        "pickup_datetime": "2016-05-15T08:00:00",
+        "pickup_datetime": "2016-05-15T08:00:00Z",
         "pickup_latitude": 40.7, "pickup_longitude": -74.0, "dropoff_latitude": 40.8, "dropoff_longitude": -73.9,
         "passenger_count": 1, "vendor_id": 5, "store_and_fwd_flag": "N"
     }, endpoint_desc="bad_vendor_id")

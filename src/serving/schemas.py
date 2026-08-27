@@ -5,7 +5,9 @@
 # See LICENSE file in the project root for full license information.
 # -----------------------------------------------------------------------------
 
-from pydantic import BaseModel, Field
+from datetime import datetime
+
+from pydantic import AwareDatetime, BaseModel, Field, field_validator
 
 from src.contract import (
     NYC_LAT_MIN, NYC_LAT_MAX,
@@ -19,10 +21,10 @@ from src.contract import (
 class PredictionRequest(BaseModel):
     """Raw input fields a client sends — pipeline transforms them into model features."""
 
-    pickup_datetime: str = Field(
+    pickup_datetime: AwareDatetime = Field(
         ...,
-        description="ISO-8601 timestamp of pickup (e.g. '2016-01-01T10:30:00')",
-        examples=["2016-05-15T14:30:00"],
+        description="Timezone-aware ISO-8601 timestamp of pickup (e.g. '2016-01-01T10:30:00Z')",
+        examples=["2016-05-15T14:30:00Z"],
     )
     passenger_count: int = Field(
         ...,
@@ -72,6 +74,14 @@ class PredictionRequest(BaseModel):
         description="Store-and-forward flag ('N' or 'Y')",
         examples=["N"],
     )
+
+    @field_validator("pickup_datetime", mode="after")
+    @classmethod
+    def validate_pickup_datetime(cls, value: datetime) -> datetime:
+        """Require timezone-aware datetimes for deterministic feature generation."""
+        if value.tzinfo is None:
+            raise ValueError("pickup_datetime must include timezone (e.g. 'Z' for UTC)")
+        return value
 
 
 class PredictionResponse(BaseModel):

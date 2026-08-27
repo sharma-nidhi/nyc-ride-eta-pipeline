@@ -5,6 +5,8 @@
 # See LICENSE file in the project root for full license information.
 # -----------------------------------------------------------------------------
 
+import time
+
 import pandas as pd
 
 from fastapi import FastAPI, HTTPException
@@ -17,6 +19,7 @@ from src.serving.schemas import (
     ModelInfoResponse,
 )
 from src.serving.model_loader import load_model, get_champion_info
+from src.monitoring.monitor import log_prediction
 
 
 # ---------------------------------------------------------------------------
@@ -25,6 +28,17 @@ from src.serving.model_loader import load_model, get_champion_info
 
 model, feature_pipeline = load_model()
 champion_info = get_champion_info()
+MODEL_FEATURE_NAMES = [
+    "passenger_count",
+    "hour_sin",
+    "hour_cos",
+    "day_of_week",
+    "haversine_dist_km",
+    "vendor_id",
+    "store_and_fwd_flag",
+    "is_weekend",
+    "is_rush_hour",
+]
 
 
 app = FastAPI(
@@ -60,9 +74,14 @@ async def model_info():
 async def predict(req: PredictionRequest):
     """Predict ETA for a single trip request."""
     try:
+        start = time.perf_counter()
         df = pd.DataFrame([req.model_dump()])
         features = feature_pipeline.transform(df)
-        prediction = model.predict(features)
+        features_df = pd.DataFrame(features, columns=MODEL_FEATURE_NAMES)
+        prediction = model.predict(features_df)
+        latency_ms = (time.perf_counter() - start) * 1000
+
+        log_prediction(df, prediction, latency_ms)  # log raw input for drift detection
         return PredictionResponse(eta_seconds=float(prediction[0]))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
@@ -72,10 +91,15 @@ async def predict(req: PredictionRequest):
 async def predict_batch(batch_req: BatchPredictionRequest):
     """Predict ETA for multiple trip requests (max 100 per batch)."""
     try:
+        start = time.perf_counter()
         records = [req.model_dump() for req in batch_req.requests]
         df = pd.DataFrame(records)
         features = feature_pipeline.transform(df)
-        predictions = model.predict(features)
+        features_df = pd.DataFrame(features, columns=MODEL_FEATURE_NAMES)
+        predictions = model.predict(features_df)
+        latency_ms = (time.perf_counter() - start) * 1000
+
+        log_prediction(df, predictions, latency_ms)  # log raw input for drift detection
         return BatchPredictionResponse(
             predictions=[
                 PredictionResponse(eta_seconds=float(p)) for p in predictions
