@@ -1,0 +1,23 @@
+artifact_path: file:C:/Kapil/BITS Mini Project/REP/mlruns/1/models/m-f5e41f0aa8e84faf8b31d950bfd4e6af/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.skops
+    predict_fn: predict
+    python_version: 3.13.5
+  sklearn:
+    code: null
+    pickled_model: model.skops
+    serialization_format: skops
+    sklearn_version: 1.9.0
+    skops_trusted_types: null
+mlflow_version: 3.15.1
+model_id: m-f5e41f0aa8e84faf8b31d950bfd4e6af
+model_size_bytes: 17591440
+model_uuid: m-f5e41f0aa8e84faf8b31d950bfd4e6af
+prompts: null
+run_id: 504073e9a2d34e61b0dd1fc3784a503c
+utc_time_created: '2026-08-14 05:06:41.590404'

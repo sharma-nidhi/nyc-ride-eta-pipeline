@@ -1,0 +1,31 @@
+# Python virtual environment
+.venv/
+.venv-1/
+venv/
+env/
+
+
+# ML models
+model_store/*.pkl
+
+# Feature store / database
+feature_store/*.db
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment variables / secrets
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

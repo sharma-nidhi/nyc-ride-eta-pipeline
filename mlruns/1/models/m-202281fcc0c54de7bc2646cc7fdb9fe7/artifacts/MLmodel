@@ -1,0 +1,22 @@
+artifact_path: file:C:/Kapil/BITS Mini Project/REP/mlruns/1/models/m-202281fcc0c54de7bc2646cc7fdb9fe7/artifacts
+flavors:
+  python_function:
+    data: model.ubj
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.xgboost
+    python_version: 3.13.5
+  xgboost:
+    code: null
+    data: model.ubj
+    model_class: xgboost.sklearn.XGBClassifier
+    model_format: ubj
+    xgb_version: 3.4.0
+mlflow_version: 3.15.1
+model_id: m-202281fcc0c54de7bc2646cc7fdb9fe7
+model_size_bytes: 2619307
+model_uuid: m-202281fcc0c54de7bc2646cc7fdb9fe7
+prompts: null
+run_id: 1d0422754f1a4f73953e4fa3a53af8f7
+utc_time_created: '2026-08-14 05:34:59.562809'

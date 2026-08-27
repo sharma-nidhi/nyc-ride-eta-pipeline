@@ -1,0 +1,5 @@
+outs:
+- md5: 200cc7d6576bc9ab8ca1d072e37bbfb4
+  size: 971438
+  hash: md5
+  path: NYC_Train_raw.csv

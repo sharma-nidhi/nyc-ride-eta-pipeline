@@ -1,0 +1,1 @@
+["DetectorId", "AlertTitle", "Category", "MitreTechniques", "ActionGrouped", "ActionGranular", "EntityType", "EvidenceRole", "ApplicationName", "ThreatFamily", "FileName", "FolderPath", "ResourceType", "Roles", "OSFamily", "OSVersion", "AntispamDirection", "SuspicionLevel", "LastVerdict", "CountryCode", "State", "City", "Hour", "DayOfWeek", "Month", "IsWeekend"]
