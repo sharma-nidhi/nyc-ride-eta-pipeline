@@ -72,13 +72,17 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Compare registered ETA model runs")
     parser.add_argument("--metric", default="mae", help="Metric to rank by (mae, rmse, r2)")
-    parser.add_argument("--ascending", action="store_true", default=True,
-                        help="Sort ascending (lower is better). Omit for DESC (higher is better, e.g. r2).")
+    parser.add_argument(
+        "--descending",
+        action="store_true",
+        help="Sort descending (useful for metrics like r2).",
+    )
     args = parser.parse_args()
 
-    df = compare_runs(primary_metric=args.metric, ascending=args.ascending)
+    df = compare_runs(primary_metric=args.metric, ascending=not args.descending)
     if df is not None:
-        print(f"\n=== Model Comparison (sorted by {args.metric}) ===\n")
+        order = "DESC" if args.descending else "ASC"
+        print(f"\n=== Model Comparison (sorted by {args.metric}, {order}) ===\n")
         print(df.to_string(index=False))
         print(f"\nBest run: {df.iloc[0]['run_id']}  "
               f"(MAE={df.iloc[0]['mae']:.2f}, RMSE={df.iloc[0]['rmse']:.2f}, "

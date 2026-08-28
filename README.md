@@ -64,6 +64,7 @@ nyc-ride-eta-pipeline/
 │   ├── models/             # Training & registry
 │   │   ├── train.py
 │   │   ├── compare.py
+│   │   ├── optuna_tuner.py
 │   │   └── registry.py
 │   ├── monitoring/         # Drift detection & decision
 │   │   ├── monitor.py
@@ -163,6 +164,20 @@ git commit -m "feat(dvc): versioned dataset slice"
 Train the baseline and all advanced models on the currently active dataset.
 *Note: The training script uses a strictly chronological 80/20 split to prevent future data leakage (M2 rule). MLflow logs are stored in a lightweight SQLite database (`mlflow.db`), which is ignored by Git.*
 
+### Hyperparameter tuning (LightGBM + XGBoost only)
+
+Uses [Optuna](https://optuna.org/) with a minimal parameter space (20 trials per model). Only LightGBM and XGBoost are tuned; Ridge and CatBoost use default hyperparameters. Running with `--tune` trains the tuned models using Optuna-discovered best params, logged the same way as the default flow — with `tune_trials` and `tune_framework` params to distinguish them in MLflow.
+
+```bash
+python -m src.models.train --model all --tune --tune-trials 20
+```
+
+| Parameter | LightGBM Range | XGBoost Range |
+| --- | --- | --- |
+| `n_estimators` | 100–500 | 100–500 |
+| `max_depth` | 3–8 | 3–8 |
+| `learning_rate` | 0.01–0.2 (log) | 0.01–0.2 (log) |
+
 **Train all models (Ridge, XGBoost, LightGBM, CatBoost):**
 
 ```bash
@@ -216,12 +231,12 @@ ls models/serving/model.pkl
 | Model | MAE | RMSE | R² |
 | ----- | --: | --: | --: |
 | Ridge (Baseline) | 292.80s | 443.03s | 0.6148 |
-| XGBoost | 245.11s | 384.68s | 0.7096 |
-| LightGBM | 245.07s | 384.64s | 0.7097 |
+| XGBoost | 245.11s | 384.67s | 0.7096 |
+| LightGBM | 244.92s | 384.42s | 0.7100 |
 | CatBoost | 246.17s | 386.22s | 0.7073 |
-| **Champion**(LightGBM) | 245.07s | 384.64s | 0.7097 |
+| **Champion**(LightGBM) | 244.92s | 384.42s | 0.7100 |
 
-*Boosting models outperform Ridge baseline by ~16% on MAE. LightGBM and XGBoost are nearly tied; LightGBM edges ahead by 0.04s.*
+*Boosting models outperform Ridge baseline by ~16% on MAE. LightGBM and XGBoost are nearly tied; LightGBM edges ahead by 0.19s.*
 
 **Why LightGBM as the champion?**
 
@@ -229,7 +244,7 @@ This problem requires capturing **non-linear relationships and feature interacti
 
 - **Feature Interactions**: Gradient boosting models automatically learn hierarchical interactions without manual feature engineering at the interaction level. Cyclical encodings (hour_sin/cos), haversine distance, and vendor flags compound meaningfully only in a non-linear model.
 - **Robustness to Scale**: All features pass through the same preprocessing pipeline, but tree models are invariant to monotonic transformations — they don't require aggressive scaling or distribution normalization.
-- **LightGBM vs. XGBoost vs. CatBoost**: All three boosting frameworks achieve nearly identical MAE (within 1s). LightGBM was selected because:
+- **LightGBM vs. XGBoost vs. CatBoost**: All three boosting frameworks achieve nearly identical MAE (within ~1.3s). LightGBM was selected because:
   - *Leaf-wise tree growth* produces deeper splits with fewer leaves, capturing complex patterns more efficiently.
   - *Faster training and inference* via histogram-based binning and GOSS (Gradient-based One-Side Sampling).
   - *Lower memory footprint* — important for API serving where model load time matters.
@@ -308,7 +323,7 @@ curl -X POST http://127.0.0.1:8000/predict \
 
 # Batch prediction (multiple trips in one request)
 curl -X POST http://127.0.0.1:8000/predict/batch \
-  -H "Content-Type: applications/json" \
+  -H "Content-Type: application/json" \
   -d '{
     "trips": [
       {

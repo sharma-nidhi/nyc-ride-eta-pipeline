@@ -18,6 +18,7 @@ MODEL_OUTPUT_DIR = pathlib.Path("models/artifacts")
 SERVING_MODEL_PATH = pathlib.Path("models/serving/model.pkl")
 MLFLOW_TRACKING_URI = "sqlite:///mlflow.db"
 EXPERIMENT_NAME = "NYC-ETA-Prediction"
+KNOWN_MODELS = {"ridge", "xgboost", "lightgbm", "catboost"}
 
 
 def promote_champion(primary_metric: str = "mae"):
@@ -45,12 +46,25 @@ def promote_champion(primary_metric: str = "mae"):
         raise RuntimeError(f"No finished runs in '{EXPERIMENT_NAME}'.")
 
     # Sort by primary metric (lower is better for mae/rmse).
+    # Includes all runs (default + tuned) — the best model wins regardless of how it was trained.
     best = min(runs, key=lambda r: r.data.metrics.get(primary_metric, float("inf")))
 
     tags = best.data.tags or {}
+    run_name = tags.get("mlflow.runName", "unknown")
+    model_type = tags.get("model_type", str(run_name).lower())
+    if model_type not in KNOWN_MODELS:
+        lowered = str(run_name).lower()
+        model_type = lowered.split("-")[0]
+    if model_type not in KNOWN_MODELS:
+        raise RuntimeError(
+            f"Cannot resolve model type from run '{run_name}'. "
+            f"Expected one of {sorted(KNOWN_MODELS)}."
+        )
+
     champion = {
         "run_id": best.info.run_id,
-        "run_name": tags.get("mlflow.runName", "unknown"),
+        "run_name": run_name,
+        "model_type": model_type,
         "status": best.info.status,
         "primary_metric": primary_metric,
         "metrics": {
@@ -68,8 +82,7 @@ def promote_champion(primary_metric: str = "mae"):
         json.dump(champion, f, indent=2)
 
     # Export a stable serving artifact path so deployment images only need one model file.
-    model_type = champion["run_name"].lower()
-    source_model_path = MODEL_OUTPUT_DIR / f"{model_type}.pkl"
+    source_model_path = MODEL_OUTPUT_DIR / f"{champion['model_type']}.pkl"
     if not source_model_path.exists():
         raise FileNotFoundError(
             f"Champion artifact '{source_model_path}' not found. "
