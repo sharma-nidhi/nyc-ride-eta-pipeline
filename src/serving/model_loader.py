@@ -1,9 +1,16 @@
 # -----------------------------------------------------------------------------
 # Project: Delivery / Ride ETA Prediction
-# Copyright (c) 2026 - ETA Projection Project Team
+# Copyright (c) 2026 - ETA Prediction Project Team
 # Licensed under the MIT License.
 # See LICENSE file in the project root for full license information.
 # -----------------------------------------------------------------------------
+
+"""
+Model Loader
+=============
+Lazy-loads the champion model (`serving/model.pkl`) and feature pipeline
+(`feature_pipeline.pkl`) from disk at API startup. Returns cached
+references on subsequent calls to avoid redundant I/O."""
 
 import json
 import joblib

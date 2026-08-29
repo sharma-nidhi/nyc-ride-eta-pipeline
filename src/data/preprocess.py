@@ -5,6 +5,14 @@
 # See LICENSE file in the project root for full license information.
 # -----------------------------------------------------------------------------
 
+"""
+Preprocessing Pipeline
+=======================
+End-to-end data preparation: ingests raw CSV, runs schema validation,
+engineers features, splits chronologically (80/20), and exports
+`X_train.parquet`, `y_train.parquet`, and `feature_pipeline.pkl`.
+Also writes a feature registry JSON for serving-side validation."""
+
 import pandas as pd
 import pathlib
 import logging

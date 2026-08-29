@@ -5,6 +5,15 @@
 # See LICENSE file in the project root for full license information.
 # -----------------------------------------------------------------------------
 
+"""
+Feature Engineering Pipeline
+=============================
+Builds a scikit-learn Pipeline that transforms raw feature columns into
+model-ready features: haversine distance, Euclidean approximation,
+cyclical hour encodings (sin/cos), and destination zone classification.
+The pipeline is saved as `feature_pipeline.pkl` for DVC tracking and
+loaded at serving time to guarantee identical transforms."""
+
 import numpy as np
 import pandas as pd
 import joblib

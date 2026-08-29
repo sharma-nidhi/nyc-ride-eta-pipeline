@@ -5,6 +5,14 @@
 # See LICENSE file in the project root for full license information.
 # -----------------------------------------------------------------------------
 
+"""
+Data Validation
+===============
+Validates raw NYC taxi data against physical and logical constraints:
+null checks, coordinate bounds, duration/impossible-speed filters,
+zero-distance rejection, and passenger-count sanity. Produces a
+completeness report (rows kept/dropped) and hard-fails if >10% is dropped."""
+
 import pandas as pd
 import numpy as np
 import logging

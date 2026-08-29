@@ -5,6 +5,13 @@
 # See LICENSE file in the project root for full license information.
 # -----------------------------------------------------------------------------
 
+"""
+API Integration Tests
+=====================
+Integration tests for the FastAPI prediction service. Covers valid
+single/batch requests, invalid inputs (bad coordinates, out-of-range
+passengers, missing fields), health check, and model-info endpoints."""
+
 from fastapi.testclient import TestClient
 
 from src.serving.api import app

@@ -5,6 +5,13 @@
 # See LICENSE file in the project root for full license information.
 # -----------------------------------------------------------------------------
 
+"""
+API Request/Response Schemas
+=============================
+Pydantic models for FastAPI input validation and response serialization.
+Bounds and allowed values are imported from `src/contract.py` to
+prevent train-serving skew. Covers single and batch prediction flows."""
+
 from datetime import datetime
 
 from pydantic import AwareDatetime, BaseModel, Field, field_validator

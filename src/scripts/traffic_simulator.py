@@ -1,3 +1,10 @@
+# -----------------------------------------------------------------------------
+# Project: Delivery / Ride ETA Prediction
+# Copyright (c) 2026 - ETA Prediction Project Team
+# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
+# -----------------------------------------------------------------------------
+
 """
 Simulates production traffic to test monitoring and drift detection.
 Generates synthetic requests with realistic drift scenarios.

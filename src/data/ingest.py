@@ -5,6 +5,12 @@
 # See LICENSE file in the project root for full license information.
 # -----------------------------------------------------------------------------
 
+"""
+Data Ingestion
+===============
+Loads raw NYC taxi trip CSV data with memory-efficient dtypes and optional
+sample-mode for quick experimentation. Outputs a raw, unmodified DataFrame."""
+
 import pandas as pd
 import pathlib
 import logging

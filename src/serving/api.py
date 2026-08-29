@@ -5,6 +5,19 @@
 # See LICENSE file in the project root for full license information.
 # -----------------------------------------------------------------------------
 
+"""
+FastAPI REST Service
+====================
+Production-grade prediction API exposing four endpoints:
+  - POST /predict       Single trip ETA prediction
+  - POST /predict/batch Batch predictions (up to 100 requests)
+  - GET  /health         Service health check
+  - GET  /model-info      Champion model metadata
+
+All requests are validated against Pydantic schemas derived from
+`src/contract.py`, logged to `production_logs.jsonl`, and served with
+microsecond-level latency tracking."""
+
 import time
 
 import pandas as pd

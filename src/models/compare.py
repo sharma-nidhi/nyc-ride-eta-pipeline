@@ -5,6 +5,13 @@
 # See LICENSE file in the project root for full license information.
 # -----------------------------------------------------------------------------
 
+"""
+Model Comparison
+================
+Reads all completed MLflow runs from the NYC-ETA-Prediction experiment
+and ranks them by a chosen metric (MAE, RMSE, or R²). Outputs a formatted
+side-by-side comparison table for model selection."""
+
 import mlflow
 
 

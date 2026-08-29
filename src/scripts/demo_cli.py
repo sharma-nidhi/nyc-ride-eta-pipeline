@@ -1,3 +1,10 @@
+# -----------------------------------------------------------------------------
+# Project: Delivery / Ride ETA Prediction
+# Copyright (c) 2026 - ETA Prediction Project Team
+# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
+# -----------------------------------------------------------------------------
+
 """
 Demo Playbook for NYC ETA API.
 Runs a curated set of valid, invalid, and edge-case scenarios against Docker container.

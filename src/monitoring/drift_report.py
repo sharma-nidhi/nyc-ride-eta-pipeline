@@ -1,3 +1,10 @@
+# -----------------------------------------------------------------------------
+# Project: Delivery / Ride ETA Prediction
+# Copyright (c) 2026 - ETA Prediction Project Team
+# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
+# -----------------------------------------------------------------------------
+
 """
 Drift detection and reporting using Evidently AI (v0.7+).
 Compares production logs against the original training dataset in model feature space.

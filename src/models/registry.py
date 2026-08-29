@@ -5,6 +5,13 @@
 # See LICENSE file in the project root for full license information.
 # -----------------------------------------------------------------------------
 
+"""
+Model Registry
+==============
+Automatically selects the best MLflow run as champion based on primary
+metric (MAE), serializes the winning model to `serving/model.pkl`, and
+writes `champion.json` with run metadata, parameters, and metrics."""
+
 import json
 import pathlib
 import mlflow

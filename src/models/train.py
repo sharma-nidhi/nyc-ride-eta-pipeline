@@ -5,6 +5,13 @@
 # See LICENSE file in the project root for full license information.
 # -----------------------------------------------------------------------------
 
+"""
+Model Training
+==============
+Trains four regression models (Ridge, LightGBM, XGBoost, CatBoost) on
+the preprocessed training set. Logs parameters, metrics (MAE, RMSE, R²),
+model signatures, and serialized artifacts to MLflow for full reproducibility."""
+
 import pandas as pd
 import numpy as np
 import pathlib
