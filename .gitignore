@@ -1,36 +1,49 @@
-# Python
+# Environments
 .venv/
 venv/
 __pycache__/
-*.py[cod]
-.pytest_cache/
+*.pyc
+
+# Secrets and Config
+.env
+
+# Jupyter
 .ipynb_checkpoints/
 
-# Data files are tracked by DVC, not Git — but keep the tiny .dvc pointers & .gitkeep
-data/raw/*
-data/processed/*
-!data/raw/.gitkeep
-!data/processed/.gitkeep
-!data/raw/*.dvc
-!data/processed/*.dvc
-*.db
+# Data & Models (DVC: ignore heavy files, track .dvc pointers)
+data/*.parquet
+data/*.csv
+data/**/*.parquet
+data/**/*.csv
+data/raw/*.zip
+data/raw/*.gz
 
-# Models / artifacts (big model binaries stay out; keep the schema contract)
-models/*
-!models/.gitkeep
-!models/feature_schema.json
+# Generated Artifacts (reproducible by re-running pipeline)
+data/validation_report.json
+data/monitoring/*.jsonl
+data/monitoring/*.json
+!data/monitoring/.gitkeep
+reports/**/*.html
+reports/**/*.json
+reports/drift/*
+!reports/drift/.gitkeep
+!reports/.gitkeep
+models/*.pkl
+models/*.pyt
+models/**/*.pkl
+models/**/*.pyt
 
-# MLflow
-mlruns/
+# DVC pointers ARE tracked by Git (no negative patterns needed)
+
+# MLflow (SQLite db + logs + artifacts)
 mlflow.db
-mlartifacts/
+mlflow.db-*
+mlruns/
 
-# Secrets / credentials
-.env
-kaggle.json
-.kaggle/
+# CatBoost auto-generated training logs
+catboost_info/
 
-# OS / IDE
+# OS
 .DS_Store
 Thumbs.db
 .vscode/

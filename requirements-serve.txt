@@ -1,9 +1,0 @@
-# Minimal dependencies for the inference container (serving only).
-# Keeps the Docker image small — no mlflow/dvc/xgboost/matplotlib needed to serve.
-fastapi>=0.110
-uvicorn[standard]>=0.27
-pydantic>=2.0
-pandas>=2.0
-numpy>=1.24
-scikit-learn>=1.3
-joblib>=1.3

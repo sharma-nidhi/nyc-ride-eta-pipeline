@@ -1,0 +1,44 @@
+# ---------------------------------------------------------------------------
+# Stage 1: Build dependencies
+# ---------------------------------------------------------------------------
+FROM python:3.11-slim AS builder
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# ---------------------------------------------------------------------------
+# Stage 2: Slim runtime
+# ---------------------------------------------------------------------------
+FROM python:3.11-slim AS runtime
+
+WORKDIR /app
+
+# curl is required for compose healthcheck probes.
+# libgomp1 is required by LightGBM runtime in slim images.
+RUN apt-get update && apt-get install -y --no-install-recommends curl libgomp1 && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy installed dependencies from builder
+COPY --from=builder /install /usr/local
+
+# Create non-root user
+RUN useradd --create-home appuser && \
+    chown -R appuser:appuser /app
+USER appuser
+
+# Copy application code
+COPY src/ src/
+
+# Copy only serving-time model artifacts baked into image
+COPY models/champion.json models/champion.json
+COPY models/feature_pipeline.pkl models/feature_pipeline.pkl
+COPY models/serving/ models/serving/
+
+# Fail fast during build when serving model is missing.
+RUN test -f models/serving/model.pkl
+
+EXPOSE 8000
+
+CMD ["uvicorn", "src.serving.api:app", "--host", "0.0.0.0", "--port", "8000"]

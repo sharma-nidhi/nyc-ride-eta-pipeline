@@ -1,1 +1,2 @@
-# keep this folder in git
+# Keep this directory in Git to preserve folder structure.
+# Processed data files are tracked via DVC.

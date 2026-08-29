@@ -5,6 +5,15 @@
 # See LICENSE file in the project root for full license information.
 # -----------------------------------------------------------------------------
 
+"""
+Feature Engineering Pipeline
+=============================
+Builds a scikit-learn Pipeline that transforms raw feature columns into
+model-ready features: haversine distance, Euclidean approximation,
+cyclical hour encodings (sin/cos), and destination zone classification.
+The pipeline is saved as `feature_pipeline.pkl` for DVC tracking and
+loaded at serving time to guarantee identical transforms."""
+
 import numpy as np
 import pandas as pd
 import joblib
@@ -18,10 +27,8 @@ logger = logging.getLogger(__name__)
 
 PIPELINE_PATH = pathlib.Path("models/feature_pipeline.pkl")
 
-# Columns consumed by each transform — matches feature_meta.json at_event entries only
-NUMERIC_COLS = ["passenger_count", "hour_sin", "hour_cos", "day_of_week", "haversine_dist_km"]
-CATEGORICAL_COLS = ["vendor_id", "store_and_fwd_flag"]
-PASSTHROUGH_COLS = ["is_weekend", "is_rush_hour"]
+# Import the "Source of Truth" configuration from feature_config
+from src.features.feature_config import NUMERIC_COLS, CATEGORICAL_COLS, PASSTHROUGH_COLS
 
 
 def _extract_temporal(df: pd.DataFrame) -> pd.DataFrame:

@@ -1,15 +1,31 @@
-# Keep the Docker build context small & the image clean.
-venv/
-data/
-mlruns/
-mlflow.db
-mlartifacts/
-monitoring/*.db
-.git/
-.dvc/
-__pycache__/
+# Git and editor state
+.git
+.gitignore
+.vscode
+
+# Python environments and cache
+.venv
+venv
+__pycache__
 *.pyc
-notebooks/
-docs/
-tests/
-explore_data.py
+
+# DVC cache/temp (huge, never needed in build context)
+.dvc/cache
+.dvc/tmp
+
+# Data and local model artifacts
+data/raw
+data/processed
+models/*.pkl
+models/**/*.pkl
+!models/feature_pipeline.pkl
+!models/serving/model.pkl
+
+# MLflow local tracking artifacts
+mlruns
+mlflow.db
+mlflow.db-*
+
+# Notebooks and checkpoints
+notebooks
+.ipynb_checkpoints

@@ -1,3 +1,17 @@
+# -----------------------------------------------------------------------------
+# Project: Delivery / Ride ETA Prediction
+# Copyright (c) 2026 - ETA Prediction Project Team
+# Licensed under the MIT License.
+# See LICENSE file in the project root for full license information.
+# -----------------------------------------------------------------------------
+
+"""
+Data Validation Tests
+=====================
+Unit tests for `src.data.validate` — verifies that impossible trip
+durations, out-of-bounds coordinates, and extreme outliers are
+correctly detected and removed."""
+
 import pytest
 import pandas as pd
 import numpy as np
