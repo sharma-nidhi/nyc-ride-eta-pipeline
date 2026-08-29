@@ -1,2 +1,1 @@
 # Keep this directory in Git to preserve folder structure.
-# Model artifacts are tracked via DVC/MLflow.

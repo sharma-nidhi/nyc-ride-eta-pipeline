@@ -1,0 +1,11 @@
+[
+  "hour",
+  "day_of_week",
+  "is_weekend",
+  "month",
+  "haversine_km",
+  "manhattan_km",
+  "passenger_count",
+  "vendor_id",
+  "store_and_fwd"
+]
