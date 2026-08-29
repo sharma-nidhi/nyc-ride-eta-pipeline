@@ -1,0 +1,50 @@
+# Environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Secrets and Config
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data & Models (DVC: ignore heavy files, track .dvc pointers)
+data/*.parquet
+data/*.csv
+data/**/*.parquet
+data/**/*.csv
+data/raw/*.zip
+data/raw/*.gz
+
+# Generated Artifacts (reproducible by re-running pipeline)
+data/validation_report.json
+data/monitoring/*.jsonl
+data/monitoring/*.json
+!data/monitoring/.gitkeep
+reports/**/*.html
+reports/**/*.json
+reports/drift/*
+!reports/drift/.gitkeep
+!reports/.gitkeep
+models/*.pkl
+models/*.pyt
+models/**/*.pkl
+models/**/*.pyt
+
+# DVC pointers ARE tracked by Git (no negative patterns needed)
+
+# MLflow (SQLite db + logs + artifacts)
+mlflow.db
+mlflow.db-*
+mlruns/
+
+# CatBoost auto-generated training logs
+catboost_info/
+
+# OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

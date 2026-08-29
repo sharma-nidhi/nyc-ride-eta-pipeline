@@ -1,0 +1,31 @@
+# Git and editor state
+.git
+.gitignore
+.vscode
+
+# Python environments and cache
+.venv
+venv
+__pycache__
+*.pyc
+
+# DVC cache/temp (huge, never needed in build context)
+.dvc/cache
+.dvc/tmp
+
+# Data and local model artifacts
+data/raw
+data/processed
+models/*.pkl
+models/**/*.pkl
+!models/feature_pipeline.pkl
+!models/serving/model.pkl
+
+# MLflow local tracking artifacts
+mlruns
+mlflow.db
+mlflow.db-*
+
+# Notebooks and checkpoints
+notebooks
+.ipynb_checkpoints

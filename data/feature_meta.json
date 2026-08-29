@@ -1,0 +1,58 @@
+{
+    "features": {
+        "vendor_id": {
+            "availability": "at_event",
+            "type": "int8",
+            "description": "Taxi vendor identifier (1 or 2)"
+        },
+        "pickup_datetime": {
+            "availability": "at_event",
+            "type": "datetime64",
+            "description": "Timestamp when the meter was engaged"
+        },
+        "passenger_count": {
+            "availability": "at_event",
+            "type": "int8",
+            "description": "Number of passengers (driver-entered)"
+        },
+        "pickup_longitude": {
+            "availability": "at_event",
+            "type": "float32",
+            "description": "Longitude where the meter was engaged"
+        },
+        "pickup_latitude": {
+            "availability": "at_event",
+            "type": "float32",
+            "description": "Latitude where the meter was engaged"
+        },
+        "dropoff_longitude": {
+            "availability": "at_event",
+            "type": "float32",
+            "description": "Destination longitude — known at dispatch"
+        },
+        "dropoff_latitude": {
+            "availability": "at_event",
+            "type": "float32",
+            "description": "Destination latitude — known at dispatch"
+        },
+        "store_and_fwd_flag": {
+            "availability": "at_event",
+            "type": "category",
+            "description": "Trip held in vehicle memory before sending (Y/N)"
+        },
+        "dropoff_datetime": {
+            "availability": "POST_EVENT",
+            "type": "datetime64",
+            "description": "Timestamp when the meter was disengaged",
+            "warning": "Only known after trip ends. Used ONLY to derive the target. MUST NOT be a model feature."
+        },
+        "trip_duration": {
+            "availability": "POST_EVENT",
+            "type": "int32",
+            "description": "Raw trip duration in seconds from the dataset",
+            "warning": "This IS the target variable. MUST NOT be used as a model input feature."
+        }
+    },
+    "target": "trip_duration_seconds",
+    "target_derived": "trip_duration_minutes"
+}
