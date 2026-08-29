@@ -1,6 +1,2 @@
 # Keep this directory in Git to preserve folder structure.
-<<<<<<<< HEAD:data/raw/.gitkeep
 # Data files are tracked via DVC.
-========
-# Notebooks used for EDA and research.
->>>>>>>> b04a06d5c7f145c977e538d91e69f9fcede44dd4:notebooks/.gitkeep
