@@ -23,9 +23,11 @@ data/validation_report.json
 data/monitoring/*.jsonl
 data/monitoring/*.json
 !data/monitoring/.gitkeep
-reports/*
+reports/**/*.html
+reports/**/*.json
+reports/drift/*
+!reports/drift/.gitkeep
 !reports/.gitkeep
-reports/drift/.gitkeep
 models/*.pkl
 models/*.pyt
 models/**/*.pkl

@@ -8,28 +8,7 @@ This project implements a professional ML system to predict ride ETA, focusing o
 
 ## 🏗️ System Architecture
 
-```mermaid
-graph LR
-    raw["NYC.csv"] --> ingest["ingest.py"]
-    ingest --> valid["validate.py"]
-    valid --> preprocess["preprocess.py"]
-    preprocess --> fp["feature_pipeline.py"]
-    fp --> train["train.py"]
-    train --> mlflow["MLflow Tracking"]
-    mlflow --> compare["compare.py"]
-    compare --> registry["registry.py"]
-    registry --> api["FastAPI serving"]
-    api --> user["Client"]
-    api --> monitor["monitor.py"]
-    monitor --> logs["production_logs.jsonl"]
-    logs --> drift["drift_report.py"]
-    drift --> decision{"Retrain Decision"}
-    decision -- "Yes" --> train
-    
-    contract["contract.py 👈"] -.- valid
-    contract -.- fp
-    contract -.- api
-```
+![Pipeline ARchitecture](screenshots/architecture.png)
 
 ### Data Flow
 
@@ -91,7 +70,7 @@ nyc-ride-eta-pipeline/
 - **Models:** XGBoost, LightGBM, CatBoost
 - **Serving:** FastAPI, Uvicorn, Docker
 - **Monitoring:** Evidently AI (drift detection), JSONL-based prediction logging
-- **Testing:** pytest (15 tests: valid requests + input validation)
+- **Testing:** pytest (16 tests: valid requests + input validation)
 - **Data Versioning:** DVC
 
 ## 🚀 Getting Started
@@ -166,10 +145,10 @@ Train the baseline and all advanced models on the currently active dataset.
 
 ### Hyperparameter tuning (LightGBM + XGBoost only)
 
-Uses [Optuna](https://optuna.org/) with a minimal parameter space (20 trials per model). Only LightGBM and XGBoost are tuned; Ridge and CatBoost use default hyperparameters. Running with `--tune` trains the tuned models using Optuna-discovered best params, logged the same way as the default flow — with `tune_trials` and `tune_framework` params to distinguish them in MLflow.
+Uses [Optuna](https://optuna.org/) with a minimal parameter space (10 trials per model). Only LightGBM and XGBoost are tuned; Ridge and CatBoost use default hyperparameters. Running with `--tune` trains the tuned models using Optuna-discovered best params, logged the same way as the default flow — with `tune_trials` and `tune_framework` params to distinguish them in MLflow.
 
 ```bash
-python -m src.models.train --model all --tune --tune-trials 20
+python -m src.models.train --model all --tune --tune-trials 10
 ```
 
 | Parameter | LightGBM Range | XGBoost Range |
@@ -237,6 +216,18 @@ ls models/serving/model.pkl
 | **Champion**(LightGBM) | 244.92s | 384.42s | 0.7100 |
 
 *Boosting models outperform Ridge baseline by ~16% on MAE. LightGBM and XGBoost are nearly tied; LightGBM edges ahead by 0.19s.*
+
+### Inference Performance
+
+Latency was measured by running 1000 single-trip predictions (`traffic_simulator.py --scenario suburban --count 1000`) against the live FastAPI server:
+
+| Metric | Value |
+| --- | ---: |
+| **Avg Latency** | 19.5ms |
+| **P95 Latency** | 24.4ms |
+| **Max Latency** | 67.2ms |
+
+> *LightGBM champion is lightweight (< 50 MB), enabling fast cold starts and sub-20ms average latency. The `/predict/batch` endpoint serves up to 100 trips per request, multiplying effective throughput.*
 
 **Why LightGBM as the champion?**
 
@@ -496,23 +487,7 @@ A higher threshold (e.g., 50%) risks missing subtle but impactful shifts. A lowe
 
 **Monitoring Architecture:**
 
-```mermaid
-flowchart TB
-    subgraph serving["Serving Layer"]
-        A[Client] -->|POST /predict| B[FastAPI API]
-        B -->|loads| C[(champion.json \n model.pkl)]
-    end
-
-    subgraph monitoring["Monitoring Layer"]
-        B -->|logs| D["production_logs.jsonl"]
-        D -->|input| E["drift_report.py"]
-        E -->|compares| F["X_train.parquet"]
-        E -->|generates| G["drift_report.html"]
-        E -->|evaluates| H{"Drift ≥ 30%?"}
-        H -->|Yes| I["RETRAIN NEEDED"]
-        H -->|No| J["NO RETRAIN NEEDED"]
-    end
-```
+![Monitoring ARchitecture](screenshots/monitoring_architecture.png)
 
 ## 🔄 Retraining Strategy
 

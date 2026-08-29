@@ -1,12 +1,13 @@
 {
-  "run_id": "656ebc2ce4e94bfa9547b8fe681b4980",
+  "run_id": "1cabc2901c0f4b73a4659ae4218224b1",
   "run_name": "LIGHTGBM",
+  "model_type": "lightgbm",
   "status": "FINISHED",
   "primary_metric": "mae",
   "metrics": {
-    "mae": 245.07270677897114,
-    "rmse": 384.64010843982135,
-    "r2": 0.7096601358419259
+    "mae": 244.9181106831504,
+    "rmse": 384.4159156974804,
+    "r2": 0.7099984943179224
   },
   "feature_count": "9",
   "dvc_slice": "full",

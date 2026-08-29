@@ -1,5 +1,0 @@
-outs:
-- md5: 2d471f9b9853e02da0cb2c9e154df726
-  size: 1061
-  hash: md5
-  path: baseline_ridge.pkl
